@@ -128,10 +128,6 @@ spec:
                   mountPath: /var/lib/clickhouse
               resources:
 {{ toYaml .Values.clickhouse.resources | indent 16 }}
-              {{- if .Values.clickhouseOperator.useNodeSelector }}
-              nodeSelector:
-                clickhouse: true
-              {{- end }}
     serviceTemplates:
       - name: chi-service-template
         generateName: {{ template "posthog.clickhouse.fullname" . }}
