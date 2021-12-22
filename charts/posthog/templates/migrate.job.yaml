@@ -11,8 +11,8 @@ metadata:
     # Kubernetes Jobs are designed to run and then terminate, but they stick around in the namespace after completion.
     # Because job objects are immutable, this can cause conflicts and errors when attempting to update or re-run them.
     # With this custom annotation, we specify a delete hook policy for Helm indicating to delete the job after it
-    # completes succesfully or not.
-    "helm.sh/hook-delete-policy": "hook-succeeded,hook-failed",
+    # completes successfully or not.
+    "helm.sh/hook-delete-policy": "hook-succeeded,hook-failed"
 spec:
   template:
     metadata:
