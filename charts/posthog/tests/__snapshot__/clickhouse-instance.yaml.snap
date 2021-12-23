@@ -39,10 +39,6 @@ the manifest should match the snapshot when using default values:
           nodes:
           - host: RELEASE-NAME-posthog-zookeeper
             port: 2181
-      defaults:
-        templates:
-          dataVolumeClaimTemplate: data-volumeclaim-template
-          serviceTemplate: chi-service-template
       templates:
         podTemplates:
         - name: pod-template-with-volumes
@@ -87,3 +83,4 @@ the manifest should match the snapshot when using default values:
             resources:
               requests:
                 storage: 20Gi
+            storageClassName: null

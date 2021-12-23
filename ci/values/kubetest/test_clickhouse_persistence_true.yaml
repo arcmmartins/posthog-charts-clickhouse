@@ -1,0 +1,34 @@
+cloud: local
+
+clickhouse:
+  enabled: true
+  persistence:
+    enabled: true
+
+#
+# For the purpose of this test, we could technically entirely skip
+# the installation of those external services and also PostHog itself.
+#
+# Unfortunately the current state of the chart doesn't let me do that
+# as we can't skip the installation of PostHog components and their
+# installation can't be successful without the services below
+#
+clickhouseOperator:
+  storage: 1Gi
+
+kafka:
+  persistence:
+    size: 1Gi
+
+postgresql:
+  persistence:
+    size: 1Gi
+
+zookeeper:
+  persistence:
+    size: 1Gi
+
+redis:
+  master:
+    persistence:
+      size: 1Gi

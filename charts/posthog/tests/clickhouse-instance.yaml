@@ -49,3 +49,22 @@ tests:
           value:
             diskType: ssd
             nodeType: fast
+
+  - it: The storageClassName value should be null using the default values
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: spec.templates.volumeClaimTemplates[0].spec.storageClassName
+          value: null
+
+  - it: The storageClassName override should work
+    set:
+      clickhouse.persistence.enabled: true
+      clickhouse.persistence.storageClass: customStorageClass
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: spec.templates.volumeClaimTemplates[0].spec.storageClassName
+          value: customStorageClass

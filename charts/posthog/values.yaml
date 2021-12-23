@@ -462,8 +462,7 @@ clickhouse:
   # servers:
   # - host: posthog-posthog-zookeeper
   #   port: 2181
-  # -- Optional: Used to manually specify a persistent volume claim. When specified the cloud specific storage class will not be provisioned
-  persistentVolumeClaim:
+
   # -- Toleration labels for clickhouse pod assignment
   tolerations: []
   # -- Affinity settings for clickhouse pod
@@ -481,6 +480,28 @@ clickhouse:
     runAsUser: 101
     runAsGroup: 101
     fsGroup: 101
+
+
+  ## @section Persistence parameters
+  ##
+  persistence:
+
+    ## @param persistence.enabled Enable data persistence
+    ##
+    enabled: true
+
+    ## @param persistence.existingClaim A manually managed Persistent Volume and Claim
+    ## If defined, PVC must be created manually before volume will be bound.
+    ##
+    existingClaim: ""
+
+    ## @param persistence.storageClass Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ## set, choosing the default provisioner.
+    ##
+    storageClass: null
 
 ## Prometheus Exporter / Metrics
 ##
@@ -680,3 +701,6 @@ statsd:
     prometheus.io/scrape: "true"
     prometheus.io/path: /metrics
     prometheus.io/port: "9102"
+
+# Misc
+installCustomStorageClass: false
