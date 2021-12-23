@@ -5,7 +5,9 @@ metadata:
   name: letsencrypt-prod
   annotations:
     # Install this last as we need 'cert-manager's CDRs API
-    # (ref: https://github.com/PostHog/charts-clickhouse/issues/168)
+    # to be installed first.
+    #
+    # ref: https://github.com/PostHog/charts-clickhouse/issues/168
     "helm.sh/hook": post-install
     "helm.sh/hook-weight": "99"
 spec:

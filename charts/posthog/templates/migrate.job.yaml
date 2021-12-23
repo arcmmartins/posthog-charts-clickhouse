@@ -7,17 +7,8 @@ metadata:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
-  annotations:
-    # Kubernetes Jobs are designed to run and then terminate, but they stick around in the namespace after completion.
-    # Because job objects are immutable, this can cause conflicts and errors when attempting to update or re-run them.
-    # With this custom annotation, we specify a delete hook policy for Helm indicating to delete the job after it
-    # completes successfully or not.
-    #
-    # TODO: when we'll drop support for Kubernetes < v1.21 we will be able to deprecate the hooks in favor to the
-    #       new TTL control functionality https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/
-    #
-    "helm.sh/hook-delete-policy": "hook-succeeded,hook-failed"
 spec:
+  ttlSecondsAfterFinished: 10
   template:
     metadata:
       name: "{{ .Release.Name }}-migrate"
@@ -37,7 +28,7 @@ spec:
       affinity:
 {{ toYaml . | indent 8 }}
       {{- end }}
-      restartPolicy: Never
+      restartPolicy: OnFailure
       {{- if .Values.image.imagePullSecrets }}
       imagePullSecrets:
 {{ toYaml .Values.image.imagePullSecrets | indent 8 }}
@@ -166,27 +157,35 @@ spec:
           - /bin/sh
           - -c
           - >
-            until (nc -vz "{{ template "posthog.redis.host" . }}.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local" {{ include "posthog.redis.port" . }});
-            do
-              echo "waiting for Redis"; sleep 1;
-            done
-
             until (nc -vz "{{ template "posthog.pgbouncer.host" . }}.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local" {{ include "posthog.pgbouncer.port" . }});
             do
               echo "waiting for PgBouncer"; sleep 1;
             done
 
-            until (nc -vz "{{ template "posthog.postgresql.host" . }}.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local" {{ include "posthog.postgresql.port" . }});
-            do
-              echo "waiting for PostgreSQL"; sleep 1;
-            done
-
-            until (nc -vz "{{ template "posthog.kafka.host" . }}.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local" 9092);
-            do
-              echo "waiting for Kafka"; sleep 1;
-            done
-
+            {{ if .Values.clickhouseOperator.enabled }}
             until (nc -vz "{{ template "posthog.clickhouse.fullname" . }}.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local" 8123);
             do
               echo "waiting for ClickHouse"; sleep 1;
             done
+            {{ end }}
+
+            {{ if .Values.postgresql.enabled }}
+            until (nc -vz "{{ template "posthog.postgresql.host" . }}.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local" {{ include "posthog.postgresql.port" . }});
+            do
+              echo "waiting for PostgreSQL"; sleep 1;
+            done
+            {{ end }}
+
+            {{ if .Values.redis.enabled }}
+            until (nc -vz "{{ template "posthog.redis.host" . }}.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local" {{ include "posthog.redis.port" . }});
+            do
+              echo "waiting for Redis"; sleep 1;
+            done
+            {{ end }}
+
+            {{ if .Values.kafka.enabled }}
+            until (nc -vz "{{ template "posthog.kafka.host" . }}.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local" 9092);
+            do
+              echo "waiting for Kafka"; sleep 1;
+            done
+            {{ end }}
