@@ -1,0 +1,32 @@
+name: e2e - Kubetest
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ci/**
+      - charts/**
+      - .github/workflows/test-kubetest.yaml
+
+jobs:
+  test-kubetest:
+    runs-on: ubuntu-20.04
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - uses: jupyterhub/action-k3s-helm@v1
+      with:
+        k3s-channel: v1.21
+        metrics-enabled: false
+        traefik-enabled: false
+
+    - name: Setup the test environment
+      run: |
+        python3 -m venv env
+        source env/bin/activate
+        pip install -r ci/kubetest/requirements.txt
+
+    - name: Run kubetest
+        cd ci/kubetest && pytest .
