@@ -1,9 +1,8 @@
-{{- if .Values.clickhouseOperator.enabled }}
+{{- if .Values.clickhouse.enabled }}
 apiVersion: "clickhouse.altinity.com/v1"
 kind: "ClickHouseInstallation"
 metadata:
   name: "posthog"
-
 spec:
   configuration:
     users:
@@ -17,11 +16,15 @@ spec:
 
     clusters:
       - name: {{ .Values.clickhouse.database | quote }}
-        templates:
-          podTemplate: pod-template-with-volumes
         layout:
           shardsCount: 1
           replicasCount: 1
+        templates:
+          podTemplate: pod-template-default
+          serviceTemplate: service-template-default
+          {{- if .Values.clickhouse.persistence.enabled }}
+          volumeClaimTemplate: volumeclaim-template-default
+          {{- end }}
 
     settings:
       format_schema_path: /etc/clickhouse-server/config.d/
@@ -51,24 +54,22 @@ spec:
 
   templates:
     podTemplates:
-      - name: pod-template-with-volumes
+      - name: pod-template-default
         spec:
           {{- if .Values.clickhouse.affinity }}
-          affinity:
-{{ toYaml .Values.clickhouse.affinity | indent 12 }}
+          affinity: {{ toYaml .Values.clickhouse.affinity | nindent 12 }}
           {{- end }}
           {{- if .Values.clickhouse.tolerations }}
-          tolerations:
-{{ toYaml .Values.clickhouse.tolerations | indent 12 }}
+          tolerations: {{ toYaml .Values.clickhouse.tolerations | nindent 12 }}
           {{- end }}
           {{- if .Values.clickhouse.nodeSelector }}
           nodeSelector: {{ toYaml .Values.clickhouse.nodeSelector | nindent 12 }}
           {{- end }}
-          {{- if (eq (include "clickhouse.externalVolume" .) "true" ) }}
+          {{- if .Values.clickhouse.persistence.existingClaim }}
           volumes:
             - name: clickhouse-storage
               persistentVolumeClaim:
-                claimName: {{ .Values.clickhouse.persistentVolumeClaim }}
+                claimName: {{ .Values.clickhouse.persistence.existingClaim }}
           {{- end }}
           {{- if .Values.clickhouse.securityContext.enabled }}
           securityContext: {{- omit .Values.clickhouse.securityContext "enabled" | toYaml | nindent 12 }}
@@ -89,22 +90,12 @@ spec:
                   containerPort: 9000
                 - name: interserver
                   containerPort: 9009
-              volumeMounts:
-              {{- if (eq (include "clickhouse.externalVolume" .) "false" ) }}
-                - name: data-volumeclaim-template
-              {{- else }}
-                - name: clickhouse-storage
-              {{- end }}
-                  mountPath: /var/lib/clickhouse
-              resources:
-{{ toYaml .Values.clickhouse.resources | indent 16 }}
-              {{- if .Values.clickhouseOperator.useNodeSelector }}
-              nodeSelector:
-                clickhouse: true
+              {{- if .Values.clickhouse.resources }}
+              resources: {{ toYaml .Values.clickhouse.resources | nindent 16 }}
               {{- end }}
 
     serviceTemplates:
-      - name: chi-service-template
+      - name: service-template-default
         generateName: {{ template "posthog.clickhouse.fullname" . }}
         spec:
           ports:
@@ -112,18 +103,20 @@ spec:
               port: 8123
             - name: tcp
               port: 9000
-          type: {{ .Values.clickhouseOperator.serviceType }}
+          type: {{ .Values.clickhouse.serviceType }}
 
     {{- if .Values.clickhouse.persistence.enabled }}
     volumeClaimTemplates:
-      - name: data-volumeclaim-template
+      - name: volumeclaim-template-default
         spec:
+          {{- if .Values.clickhouse.persistence.storageClass }}
+          storageClassName: {{ .Values.clickhouse.persistence.storageClass }}
+          {{- end }}
           accessModes:
             - ReadWriteOnce
           resources:
             requests:
-              storage: {{ .Values.clickhouseOperator.storage | quote }}
-          storageClassName: {{ .Values.clickhouse.persistence.storageClass }}
+              storage: {{ .Values.clickhouse.persistence.size | quote }}
     {{- end }}
 
 {{- end }}

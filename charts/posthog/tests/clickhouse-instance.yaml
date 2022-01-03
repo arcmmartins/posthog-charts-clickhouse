@@ -3,16 +3,16 @@ templates:
   - templates/clickhouse_instance.yaml
 
 tests:
-  - it: should be empty if clickhouseOperator.enabled is set to false
+  - it: should be empty if clickhouse.enabled is set to false
     set:
-      clickhouseOperator.enabled: false
+      clickhouse.enabled: false
     asserts:
       - hasDocuments:
           count: 0
 
   - it: the manifest should match the snapshot when using default values
     set:
-      clickhouseOperator.enabled: true
+      clickhouse.enabled: true
     asserts:
       - hasDocuments:
           count: 1
@@ -20,7 +20,7 @@ tests:
 
   - it: should have the correct apiVersion
     set:
-      clickhouseOperator.enabled: true
+      clickhouse.enabled: true
     asserts:
       - hasDocuments:
           count: 1
@@ -29,7 +29,7 @@ tests:
 
   - it: should be the correct kind
     set:
-      clickhouseOperator.enabled: true
+      clickhouse.enabled: true
     asserts:
       - hasDocuments:
           count: 1

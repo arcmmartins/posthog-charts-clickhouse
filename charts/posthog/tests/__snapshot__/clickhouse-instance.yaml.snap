@@ -12,7 +12,9 @@ the manifest should match the snapshot when using default values:
             shardsCount: 1
           name: posthog
           templates:
-            podTemplate: pod-template-with-volumes
+            podTemplate: pod-template-default
+            serviceTemplate: service-template-default
+            volumeClaimTemplate: volumeclaim-template-default
         files:
           events.proto: |
             syntax = "proto3";
@@ -41,7 +43,7 @@ the manifest should match the snapshot when using default values:
             port: 2181
       templates:
         podTemplates:
-        - name: pod-template-with-volumes
+        - name: pod-template-default
           spec:
             containers:
             - command:
@@ -57,17 +59,13 @@ the manifest should match the snapshot when using default values:
                 name: client
               - containerPort: 9009
                 name: interserver
-              resources: {}
-              volumeMounts:
-              - mountPath: /var/lib/clickhouse
-                name: data-volumeclaim-template
             securityContext:
               fsGroup: 101
               runAsGroup: 101
               runAsUser: 101
         serviceTemplates:
         - generateName: clickhouse-RELEASE-NAME
-          name: chi-service-template
+          name: service-template-default
           spec:
             ports:
             - name: http
@@ -76,11 +74,10 @@ the manifest should match the snapshot when using default values:
               port: 9000
             type: NodePort
         volumeClaimTemplates:
-        - name: data-volumeclaim-template
+        - name: volumeclaim-template-default
           spec:
             accessModes:
             - ReadWriteOnce
             resources:
               requests:
                 storage: 20Gi
-            storageClassName: null
