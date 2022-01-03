@@ -57,7 +57,7 @@ def test_volume_claim(setup, kube):
         namespace="posthog",
         labels={"clickhouse.altinity.com/namespace": "posthog"},
     )
-    statefulset_spec = list(statefulsets.values())[0].obj.spec
+    statefulset_spec = next(statefulsets.values()).obj.spec
 
     volume_claim_templates = statefulset_spec.volume_claim_templates
     assert volume_claim_templates == None or len(volume_claim_templates) == 0, "ClickHouse should not be using a PVC"

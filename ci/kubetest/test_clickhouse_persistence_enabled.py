@@ -57,7 +57,7 @@ def test_volume_claim(setup, kube):
         namespace="posthog",
         labels={"clickhouse.altinity.com/namespace": "posthog"},
     )
-    statefulset_spec = list(statefulsets.values())[0].obj.spec
+    statefulset_spec = next(statefulsets.values()).obj.spec
 
     volume_claim_template_spec = statefulset_spec.volume_claim_templates[0].spec
     volume_mounts = statefulset_spec.template.spec.containers[0].volume_mounts
