@@ -1,4 +1,4 @@
-name: e2e - Kubetest
+name: e2e - k3s (kubetest)
 
 on:
   workflow_dispatch:
@@ -12,21 +12,20 @@ jobs:
   test-kubetest:
     runs-on: ubuntu-20.04
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: Checkout
-      uses: actions/checkout@v2
+      - uses: jupyterhub/action-k3s-helm@v1
+        with:
+          k3s-channel: v1.21
+          metrics-enabled: false
+          traefik-enabled: false
 
-    - uses: jupyterhub/action-k3s-helm@v1
-      with:
-        k3s-channel: v1.21
-        metrics-enabled: false
-        traefik-enabled: false
+      - name: Setup the test environment
+        run: |
+          python3 -m venv env
+          source env/bin/activate
+          pip install -r ci/kubetest/requirements.txt
 
-    - name: Setup the test environment
-      run: |
-        python3 -m venv env
-        source env/bin/activate
-        pip install -r ci/kubetest/requirements.txt
-
-    - name: Run kubetest
-        cd ci/kubetest && pytest .
+      - name: Run kubetest
+          cd ci/kubetest && pytest .
