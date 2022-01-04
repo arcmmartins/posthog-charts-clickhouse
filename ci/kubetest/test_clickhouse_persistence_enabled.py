@@ -40,7 +40,7 @@ def setup(kube):
     log.debug("✅ Done!")
 
     log.debug("🔄 Waiting for all pods to be ready...")
-    time.sleep(10)
+    time.sleep(30)
     start = time.time()
     timeout = 60
     while time.time() < start + timeout:

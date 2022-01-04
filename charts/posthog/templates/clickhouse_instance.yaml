@@ -22,7 +22,7 @@ spec:
         templates:
           podTemplate: pod-template-default
           serviceTemplate: service-template-default
-          {{- if .Values.clickhouse.persistence.enabled }}
+          {{- if and (.Values.clickhouse.persistence.enabled) (not .Values.clickhouse.persistence.existingClaim) -}}
           volumeClaimTemplate: volumeclaim-template-default
           {{- end }}
 
@@ -65,9 +65,9 @@ spec:
           {{- if .Values.clickhouse.nodeSelector }}
           nodeSelector: {{ toYaml .Values.clickhouse.nodeSelector | nindent 12 }}
           {{- end }}
-          {{- if .Values.clickhouse.persistence.existingClaim }}
+          {{- if and .Values.clickhouse.persistence.enabled .Values.clickhouse.persistence.existingClaim -}}
           volumes:
-            - name: clickhouse-storage
+            - name: existing-volumeclaim
               persistentVolumeClaim:
                 claimName: {{ .Values.clickhouse.persistence.existingClaim }}
           {{- end }}
@@ -105,7 +105,7 @@ spec:
               port: 9000
           type: {{ .Values.clickhouse.serviceType }}
 
-    {{- if .Values.clickhouse.persistence.enabled }}
+    {{- if and (.Values.clickhouse.persistence.enabled) (not .Values.clickhouse.persistence.existingClaim) -}}
     volumeClaimTemplates:
       - name: volumeclaim-template-default
         spec:
