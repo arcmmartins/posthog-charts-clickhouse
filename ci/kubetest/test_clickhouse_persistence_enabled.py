@@ -23,34 +23,34 @@ helm upgrade \
 @pytest.fixture
 def setup(kube):
     log.debug("🔄 Setting up the k8s cluster...")
-    # cmd = "kubectl delete all --all -n {namespace}".format(namespace=NAMESPACE)
-    # cmd_run = subprocess.run(cmd, shell=True)
-    # cmd_return_code = cmd_run.returncode
-    # if cmd_return_code:
-    #     pytest.fail("❌ Error while running '{}'. Return code: {}".format(cmd,cmd_return_code))
-    # log.debug("✅ Done!")
+    cmd = "kubectl delete all --all -n {namespace}".format(namespace=NAMESPACE)
+    cmd_run = subprocess.run(cmd, shell=True)
+    cmd_return_code = cmd_run.returncode
+    if cmd_return_code:
+        pytest.fail("❌ Error while running '{}'. Return code: {}".format(cmd,cmd_return_code))
+    log.debug("✅ Done!")
 
-    # log.debug("🔄 Deploying PostHog...")
-    # cmd = HELM_INSTALL_CMD
-    # cmd_run = subprocess.run(cmd, shell=True)
-    # cmd_return_code = cmd_run.returncode
-    # if cmd_return_code:
-    #     pytest.fail("❌ Error while running '{}'. Return code: {}".format(cmd,cmd_return_code))
-    # log.debug("✅ Done!")
+    log.debug("🔄 Deploying PostHog...")
+    cmd = HELM_INSTALL_CMD
+    cmd_run = subprocess.run(cmd, shell=True)
+    cmd_return_code = cmd_run.returncode
+    if cmd_return_code:
+        pytest.fail("❌ Error while running '{}'. Return code: {}".format(cmd,cmd_return_code))
+    log.debug("✅ Done!")
 
-    # log.debug("🔄 Waiting for all pods to be ready...")
-    # time.sleep(30)
-    # start = time.time()
-    # timeout = 60
-    # while time.time() < start + timeout:
-    #     pods = kube.get_pods(namespace="posthog")
-    #     for pod in pods.values():
-    #         if not pod.is_ready():
-    #             continue
-    #     break
-    # else:
-    #     pytest.fail("❌ Timeout raised while waiting for pods to be ready")
-    # log.debug("✅ Done!")
+    log.debug("🔄 Waiting for all pods to be ready...")
+    time.sleep(30)
+    start = time.time()
+    timeout = 60
+    while time.time() < start + timeout:
+        pods = kube.get_pods(namespace="posthog")
+        for pod in pods.values():
+            if not pod.is_ready():
+                continue
+        break
+    else:
+        pytest.fail("❌ Timeout raised while waiting for pods to be ready")
+    log.debug("✅ Done!")
 
 def test_volume_claim(setup, kube):
     statefulsets = kube.get_statefulsets(
@@ -74,15 +74,3 @@ def test_volume_claim(setup, kube):
     volume_mounts = statefulset_spec.template.spec.containers[0].volume_mounts
     expected_volume_mount = client.V1VolumeMount(name='volumeclaim-template-default', mount_path="/var/lib/clickhouse")
     assert expected_volume_mount in volume_mounts, "spec.containers.[].volumeMounts should include 'existing-volumeclaim'"
-
-    # volume_claim_template_spec = statefulset_spec.volume_claim_templates[0].spec
-    # volume_mounts = statefulset_spec.template.spec.containers[0].volume_mounts
-
-    # volume_claim_templates = statefulset_spec.volume_claim_templates
-    # assert len(volume_claim_templates) == 1, "ClickHouse should be using a PVC"
-
-    # volume_claim_template_storage_class = volume_claim_template_spec.storage_class_name
-    # assert volume_claim_template_storage_class == None, "ClickHouse PVC should be using the default StorageClass"
-
-    # volume_claim_size = volume_claim_template_spec.resources.requests["storage"]
-    # assert volume_claim_size == "1Gi", "ClickHouse PVC size should be correct"
