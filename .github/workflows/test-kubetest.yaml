@@ -29,4 +29,5 @@ jobs:
 
       - name: Run kubetest
         run: |
+          source env/bin/activate
           cd ci/kubetest && python -m pytest .
