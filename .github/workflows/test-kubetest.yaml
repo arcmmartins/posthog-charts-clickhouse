@@ -28,4 +28,5 @@ jobs:
           pip install -r ci/kubetest/requirements.txt
 
       - name: Run kubetest
+        run: |
           cd ci/kubetest && pytest .
