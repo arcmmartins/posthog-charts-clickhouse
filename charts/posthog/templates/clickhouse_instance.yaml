@@ -22,7 +22,7 @@ spec:
         templates:
           podTemplate: pod-template-default
           serviceTemplate: service-template-default
-          {{- if and (.Values.clickhouse.persistence.enabled) (not .Values.clickhouse.persistence.existingClaim) -}}
+          {{- if and (.Values.clickhouse.persistence.enabled) (not .Values.clickhouse.persistence.existingClaim) }}
           volumeClaimTemplate: volumeclaim-template-default
           {{- end }}
 
@@ -65,12 +65,18 @@ spec:
           {{- if .Values.clickhouse.nodeSelector }}
           nodeSelector: {{ toYaml .Values.clickhouse.nodeSelector | nindent 12 }}
           {{- end }}
-          {{- if and .Values.clickhouse.persistence.enabled .Values.clickhouse.persistence.existingClaim -}}
+
+          {{- if .Values.clickhouse.persistence.enabled }}
           volumes:
+          {{- if .Values.clickhouse.persistence.existingClaim }}
             - name: existing-volumeclaim
               persistentVolumeClaim:
                 claimName: {{ .Values.clickhouse.persistence.existingClaim }}
+          {{- else }}
+            - name: volumeclaim-template-default
           {{- end }}
+          {{- end }}
+
           {{- if .Values.clickhouse.securityContext.enabled }}
           securityContext: {{- omit .Values.clickhouse.securityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
@@ -83,6 +89,17 @@ spec:
                 - /bin/bash
                 - -c
                 - /usr/bin/clickhouse-server --config-file=/etc/clickhouse-server/config.xml
+
+              {{- if .Values.clickhouse.persistence.enabled }}
+              volumeMounts:
+                - mountPath: /var/lib/clickhouse
+              {{- if .Values.clickhouse.persistence.existingClaim }}
+                  name: existing-volumeclaim
+              {{- else }}
+                  name: volumeclaim-template-default
+              {{- end }}
+              {{- end }}
+
               ports:
                 - name: http
                   containerPort: 8123
@@ -105,7 +122,7 @@ spec:
               port: 9000
           type: {{ .Values.clickhouse.serviceType }}
 
-    {{- if and (.Values.clickhouse.persistence.enabled) (not .Values.clickhouse.persistence.existingClaim) -}}
+    {{- if and (.Values.clickhouse.persistence.enabled) (not .Values.clickhouse.persistence.existingClaim) }}
     volumeClaimTemplates:
       - name: volumeclaim-template-default
         spec:
