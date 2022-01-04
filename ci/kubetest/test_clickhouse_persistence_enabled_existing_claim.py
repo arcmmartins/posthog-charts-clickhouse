@@ -1,9 +1,7 @@
 import time
-import pytest
 import subprocess
-from typing import Optional
-from pprint import pprint
 import logging
+import pytest
 from kubernetes import client
 
 logging.basicConfig(level=logging.DEBUG)
@@ -78,9 +76,9 @@ def test_volume_claim(setup, kube):
             claim_name="custom-pvc",
         )
     )
-    assert expected_volume in volumes
+    assert expected_volume in volumes, "spec.volumes should include 'existing-volumeclaim'"
 
     # Verify the spec.containers.[].volumeMounts
     volume_mounts = statefulset_spec.template.spec.containers[0].volume_mounts
     expected_volume_mount = client.V1VolumeMount(name='existing-volumeclaim', mount_path="/var/lib/clickhouse")
-    assert expected_volume_mount in volume_mounts
+    assert expected_volume_mount in volume_mounts, "spec.containers.[].volumeMounts should include 'existing-volumeclaim'"

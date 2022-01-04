@@ -74,6 +74,8 @@ spec:
                 claimName: {{ .Values.clickhouse.persistence.existingClaim }}
           {{- else }}
             - name: volumeclaim-template-default
+              persistentVolumeClaim:
+                claimName: volumeclaim-template-default
           {{- end }}
           {{- end }}
 

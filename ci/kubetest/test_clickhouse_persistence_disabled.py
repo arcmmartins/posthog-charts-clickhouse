@@ -60,6 +60,7 @@ def test_volume_claim(setup, kube):
     )
     statefulset = next(iter(statefulsets.values()))
     statefulset_spec = statefulset.obj.spec
-    volume_claim_templates = statefulset_spec.volume_claim_templates
 
-    assert volume_claim_templates == None or len(volume_claim_templates) == 0, "ClickHouse should not be using a PVC"
+    # Verify the spec.volumes configuration
+    volumes = statefulset_spec.template.spec.volumes
+    assert all(volume.config_map != None for volume in volumes), "All the spec.volumes should be of type config_map"
