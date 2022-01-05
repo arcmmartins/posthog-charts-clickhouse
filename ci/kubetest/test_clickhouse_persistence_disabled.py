@@ -4,11 +4,11 @@ import subprocess
 from typing import Optional
 from pprint import pprint
 import logging
+from utils import NAMESPACE
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger()
 
-NAMESPACE="posthog"
 HELM_INSTALL_CMD='''
 helm upgrade \
     --install \
