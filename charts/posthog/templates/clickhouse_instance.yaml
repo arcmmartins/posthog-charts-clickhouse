@@ -102,12 +102,12 @@ spec:
 
               {{- if .Values.clickhouse.persistence.enabled }}
               volumeMounts:
-                - mountPath: /var/lib/clickhouse
               {{- if .Values.clickhouse.persistence.existingClaim }}
-                  name: existing-volumeclaim
+                - name: existing-volumeclaim
               {{- else }}
-                  name: volumeclaim-template-default
+                - name: volumeclaim-template-default
               {{- end }}
+                  mountPath: /var/lib/clickhouse
               {{- end }}
 
               {{- if .Values.clickhouse.resources }}
