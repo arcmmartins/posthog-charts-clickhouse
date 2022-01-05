@@ -72,7 +72,7 @@ tests:
           value:
             podTemplate: pod-template-default
             serviceTemplate: service-template-default
-            volumeClaimTemplate: volumeclaim-template-default
+            dataVolumeClaimTemplate: volumeclaim-template-default
 
 
   - it: pod-template-default spec.volumes should not exist if persistence is disabled

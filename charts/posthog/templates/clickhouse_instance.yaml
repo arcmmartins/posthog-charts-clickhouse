@@ -20,7 +20,7 @@ spec:
           podTemplate: pod-template-default
           serviceTemplate: service-template-default
           {{- if and (.Values.clickhouse.persistence.enabled) (not .Values.clickhouse.persistence.existingClaim) }}
-          volumeClaimTemplate: volumeclaim-template-default
+          dataVolumeClaimTemplate: volumeclaim-template-default
           {{- end }}
         layout:
           shardsCount: 1

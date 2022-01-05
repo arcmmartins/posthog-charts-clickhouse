@@ -12,9 +12,9 @@ the manifest should match the snapshot when using default values:
             shardsCount: 1
           name: posthog
           templates:
+            dataVolumeClaimTemplate: volumeclaim-template-default
             podTemplate: pod-template-default
             serviceTemplate: service-template-default
-            volumeClaimTemplate: volumeclaim-template-default
         files:
           events.proto: |
             syntax = "proto3";
