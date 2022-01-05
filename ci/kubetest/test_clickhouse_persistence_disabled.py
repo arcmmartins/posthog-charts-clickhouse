@@ -1,6 +1,6 @@
 import pytest
 
-from utils import cleanup_k8s, helm_install, wait_for_pods_to_be_ready
+from utils import cleanup_k8s, helm_install, wait_for_pods_to_be_ready, get_clickhouse_statefulset_spec
 
 HELM_INSTALL_CMD = """
 helm upgrade \
@@ -23,12 +23,7 @@ def setup(kube):
 
 
 def test_volume_claim(setup, kube):
-    statefulsets = kube.get_statefulsets(
-        namespace="posthog",
-        labels={"clickhouse.altinity.com/namespace": "posthog"},
-    )
-    statefulset = next(iter(statefulsets.values()))
-    statefulset_spec = statefulset.obj.spec
+    statefulset_spec = get_clickhouse_statefulset_spec(kube)
 
     # Verify the spec.volumes configuration
     volumes = statefulset_spec.template.spec.volumes
