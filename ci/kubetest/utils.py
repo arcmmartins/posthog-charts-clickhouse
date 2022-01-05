@@ -45,6 +45,7 @@ def wait_for_pods_to_be_ready(kube):
         pytest.fail("❌ Timeout raised while waiting for pods to be ready")
     log.debug("✅ Done!")
 
+
 def get_clickhouse_statefulset_spec(kube):
     statefulsets = kube.get_statefulsets(
         namespace="posthog",

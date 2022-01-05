@@ -1,6 +1,6 @@
 import pytest
 
-from utils import cleanup_k8s, helm_install, wait_for_pods_to_be_ready, get_clickhouse_statefulset_spec
+from utils import cleanup_k8s, get_clickhouse_statefulset_spec, helm_install, wait_for_pods_to_be_ready
 
 HELM_INSTALL_CMD = """
 helm upgrade \
