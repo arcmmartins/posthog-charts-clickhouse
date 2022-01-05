@@ -1,12 +1,14 @@
-import time
-import subprocess
 import logging
+import subprocess
+import time
+
 import pytest
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger()
 
-NAMESPACE="posthog"
+NAMESPACE = "posthog"
+
 
 def cleanup_k8s():
     log.debug("🔄 Setting up the k8s cluster...")
@@ -14,8 +16,9 @@ def cleanup_k8s():
     cmd_run = subprocess.run(cmd, shell=True)
     cmd_return_code = cmd_run.returncode
     if cmd_return_code:
-        pytest.fail("❌ Error while running '{}'. Return code: {}".format(cmd,cmd_return_code))
+        pytest.fail("❌ Error while running '{}'. Return code: {}".format(cmd, cmd_return_code))
     log.debug("✅ Done!")
+
 
 def helm_install(HELM_INSTALL_CMD):
     log.debug("🔄 Deploying PostHog...")
@@ -23,8 +26,9 @@ def helm_install(HELM_INSTALL_CMD):
     cmd_run = subprocess.run(cmd, shell=True)
     cmd_return_code = cmd_run.returncode
     if cmd_return_code:
-        pytest.fail("❌ Error while running '{}'. Return code: {}".format(cmd,cmd_return_code))
+        pytest.fail("❌ Error while running '{}'. Return code: {}".format(cmd, cmd_return_code))
     log.debug("✅ Done!")
+
 
 def wait_for_pods_to_be_ready(kube):
     log.debug("🔄 Waiting for all pods to be ready...")

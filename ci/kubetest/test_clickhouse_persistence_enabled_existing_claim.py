@@ -1,13 +1,15 @@
 import logging
 import subprocess
-from kubernetes import client
+
 import pytest
+from kubernetes import client
+
 from utils import NAMESPACE, cleanup_k8s, helm_install, wait_for_pods_to_be_ready
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger()
 
-HELM_INSTALL_CMD='''
+HELM_INSTALL_CMD = """
 helm upgrade \
     --install \
     -f ../../ci/values/kubetest/test_clickhouse_persistence_enabled_existing_claim.yaml \
@@ -17,7 +19,8 @@ helm upgrade \
     posthog ../../charts/posthog \
     --wait-for-jobs \
     --wait
-'''
+"""
+
 
 def create_custom_pvc():
     log.debug("🔄 Creating a custom Persistent Volume Claim...")
@@ -25,8 +28,9 @@ def create_custom_pvc():
     cmd_run = subprocess.run(cmd, shell=True)
     cmd_return_code = cmd_run.returncode
     if cmd_return_code:
-        pytest.fail("❌ Error while running '{}'. Return code: {}".format(cmd,cmd_return_code))
+        pytest.fail("❌ Error while running '{}'. Return code: {}".format(cmd, cmd_return_code))
     log.debug("✅ Done!")
+
 
 @pytest.fixture
 def setup(kube):
@@ -34,6 +38,7 @@ def setup(kube):
     create_custom_pvc()
     helm_install(HELM_INSTALL_CMD)
     wait_for_pods_to_be_ready(kube)
+
 
 def test_volume_claim(setup, kube):
     statefulsets = kube.get_statefulsets(
@@ -49,11 +54,13 @@ def test_volume_claim(setup, kube):
         name="existing-volumeclaim",
         persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(
             claim_name="custom-pvc",
-        )
+        ),
     )
     assert expected_volume in volumes, "spec.volumes should include 'existing-volumeclaim'"
 
     # Verify the spec.containers.[].volumeMounts
     volume_mounts = statefulset_spec.template.spec.containers[0].volume_mounts
-    expected_volume_mount = client.V1VolumeMount(name='existing-volumeclaim', mount_path="/var/lib/clickhouse")
-    assert expected_volume_mount in volume_mounts, "spec.containers.[].volumeMounts should include 'existing-volumeclaim'"
+    expected_volume_mount = client.V1VolumeMount(name="existing-volumeclaim", mount_path="/var/lib/clickhouse")
+    assert (
+        expected_volume_mount in volume_mounts
+    ), "spec.containers.[].volumeMounts should include 'existing-volumeclaim'"
