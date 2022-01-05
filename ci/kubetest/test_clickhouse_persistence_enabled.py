@@ -1,13 +1,7 @@
-import time
-import subprocess
-import logging
 import pytest
 from kubernetes import client
+from utils import cleanup_k8s, helm_install, wait_for_pods_to_be_ready
 
-logging.basicConfig(level=logging.DEBUG)
-log = logging.getLogger()
-
-NAMESPACE="posthog"
 HELM_INSTALL_CMD='''
 helm upgrade \
     --install \
@@ -22,35 +16,9 @@ helm upgrade \
 
 @pytest.fixture
 def setup(kube):
-    log.debug("🔄 Setting up the k8s cluster...")
-    cmd = "kubectl delete all --all -n {namespace}".format(namespace=NAMESPACE)
-    cmd_run = subprocess.run(cmd, shell=True)
-    cmd_return_code = cmd_run.returncode
-    if cmd_return_code:
-        pytest.fail("❌ Error while running '{}'. Return code: {}".format(cmd,cmd_return_code))
-    log.debug("✅ Done!")
-
-    log.debug("🔄 Deploying PostHog...")
-    cmd = HELM_INSTALL_CMD
-    cmd_run = subprocess.run(cmd, shell=True)
-    cmd_return_code = cmd_run.returncode
-    if cmd_return_code:
-        pytest.fail("❌ Error while running '{}'. Return code: {}".format(cmd,cmd_return_code))
-    log.debug("✅ Done!")
-
-    log.debug("🔄 Waiting for all pods to be ready...")
-    time.sleep(30)
-    start = time.time()
-    timeout = 60
-    while time.time() < start + timeout:
-        pods = kube.get_pods(namespace="posthog")
-        for pod in pods.values():
-            if not pod.is_ready():
-                continue
-        break
-    else:
-        pytest.fail("❌ Timeout raised while waiting for pods to be ready")
-    log.debug("✅ Done!")
+    cleanup_k8s()
+    helm_install(HELM_INSTALL_CMD)
+    wait_for_pods_to_be_ready(kube)
 
 def test_volume_claim(setup, kube):
     statefulsets = kube.get_statefulsets(
