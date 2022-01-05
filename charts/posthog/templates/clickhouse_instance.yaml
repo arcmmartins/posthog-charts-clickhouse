@@ -16,15 +16,15 @@ spec:
 
     clusters:
       - name: {{ .Values.clickhouse.database | quote }}
-        layout:
-          shardsCount: 1
-          replicasCount: 1
         templates:
           podTemplate: pod-template-default
           serviceTemplate: service-template-default
           {{- if and (.Values.clickhouse.persistence.enabled) (not .Values.clickhouse.persistence.existingClaim) }}
           volumeClaimTemplate: volumeclaim-template-default
           {{- end }}
+        layout:
+          shardsCount: 1
+          replicasCount: 1
 
     settings:
       format_schema_path: /etc/clickhouse-server/config.d/
@@ -92,6 +92,14 @@ spec:
                 - -c
                 - /usr/bin/clickhouse-server --config-file=/etc/clickhouse-server/config.xml
 
+              ports:
+                - name: http
+                  containerPort: 8123
+                - name: client
+                  containerPort: 9000
+                - name: interserver
+                  containerPort: 9009
+
               {{- if .Values.clickhouse.persistence.enabled }}
               volumeMounts:
                 - mountPath: /var/lib/clickhouse
@@ -102,13 +110,6 @@ spec:
               {{- end }}
               {{- end }}
 
-              ports:
-                - name: http
-                  containerPort: 8123
-                - name: client
-                  containerPort: 9000
-                - name: interserver
-                  containerPort: 9009
               {{- if .Values.clickhouse.resources }}
               resources: {{ toYaml .Values.clickhouse.resources | nindent 16 }}
               {{- end }}
